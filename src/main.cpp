@@ -35,6 +35,17 @@ int getOCVtype(sl::MAT_TYPE type) {
     return cv_type;
 }
 
+// function to check extrinsic calibration parameters for the zed camera
+void logCameraParams(sl::CameraParameters cam) {
+    std::cout << "Fx: " << cam.fx << " | Fy: " << cam.fy << " | Cx: " << cam.cx << " | Cy: " << cam.cy << std::endl;
+    for (const double &dist_param: cam.disto) {
+        std::cout << "Param: " << dist_param << "| ";
+    }
+    std::cout << std::endl;
+}
+
+// 
+
 /**
 * Conversion function between sl::Mat and cv::Mat
 **/
@@ -65,6 +76,13 @@ int main(int argc, char **argv) {
     }
     // get camera resolution details
     Resolution zed_size = zed.getCameraInformation().camera_resolution;
+
+    CalibrationParameters calibration_params = zed.getCameraInformation().camera_configuration.calibration_parameters;
+
+    // uncomment below to see camera parameters
+    logCameraParams(calibration_params.left_cam);
+    logCameraParams(calibration_params.right_cam);
+    
 
     // setup sl mat
     // TODO: investiage the different with an sl image being 3 vs 4 channels
@@ -98,16 +116,16 @@ int main(int argc, char **argv) {
         
             cv::aruco::detectMarkers(image_ocv_c3, dictionary, marker_corners, marker_ids, params, rejection_candidates);
 
-            // identify aruco codes
+            // identify aruco czed.getCameraInformation().camera_configuration.calibration_parametersodes
             if (marker_corners.size() > 0) {
                 // show detected markers
                 cv::aruco::drawDetectedMarkers(image_ocv_c3, marker_corners, marker_ids);
             } else {
-                std::cout << "No ARUCO code detected" << std::endl;
+                // std::cout << "No ARUCO code detected" << std::endl;
             }
         }
 
-        cv::imshow("Image window", image_ocv_c3);
+        // cv::imshow("Image window", image_ocv_c3);
 
         // handle key event -> make cv2 show a new image on the window every 5ms
         cv::waitKey(5);
